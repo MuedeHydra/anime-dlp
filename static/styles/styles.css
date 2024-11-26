@@ -1,0 +1,12 @@
+*{font-family: 'Commit-Mono';}
+body {background-color: #404040;}
+h1   {color: SlateBlue;}
+p    {color: LightGray;}
+pre   {color: LightGray;}
+ul   {color: LightGray;}
+input {
+  max-width: 200x;
+  width: 98%;
+  min-width: 80px;
+  padding-right: 10px;
+}
