@@ -473,7 +473,7 @@ def disconnect():
 
 
 if __name__ == '__main__':
-    conf = conf_reader(f"{Path.home}/python/anime-dlp-3/anime-dlp.conf")
+    conf = conf_reader(f"{Path.home()}/python/anime-dlp-3/anime-dlp.conf")
     # conf = conf_reader("~/python/anime-dlp-3/anime-dlp.conf")
     threading.Thread(target=background_thread, daemon=True).start()
     app.run()
