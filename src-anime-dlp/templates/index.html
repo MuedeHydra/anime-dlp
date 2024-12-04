@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='styles/styles.css') }}">
+    <title>
+        Anime Downloader
+    </title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='icons/icon-64.png') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"
+        integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ=="
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <h1>
+        <img src="{{ url_for('static',filename='icons/icon-64.png') }}" style="width:64px;height:64px;"> Anime Downloader
+    </h1>
+    <hr>
+    <P>Download:</P>
+    <pre><span id="sample"></span></pre>
+    <hr>
+    <form action="#" method="get">
+        <p>Enter URL:</p>
+        <p><input type="text" name="url" /></p>
+        <p><input type="submit" value="bestätigen" /></p>
+    </form>
+    <hr>
+    <section class="container">
+        <div class="one">
+            <p>open to Download (url fetcht):</p>
+            <!--<pre><span id="que"></span></pre>-->
+            <ul id="que"></ul>
+            <p>open:</p>
+            <ul id="open"></ul>
+        </div>
+        <div class="two">
+            <p>faild:</p>
+            <ul id="faild"></ul>
+        </div>
+    </section>
+
+
+
+</body>
+
+<script>
+    $(document).ready(function () {
+        var test
+        //connect to the socket server.
+        //   var socket = io.connect("http://" + document.domain + ":" + location.port);
+        var socket = io.connect();
+
+        //receive details from server
+        socket.on("anime", function (msg) {
+            progress = msg.progress;
+            que = msg.open
+            document.getElementById("sample").innerHTML = progress;
+            document.getElementById("que").innerHTML = que;
+            document.getElementById("open").innerHTML = msg.open_to_pars;
+            document.getElementById("faild").innerHTML = msg.faild;
+        });
+    });
+</script>
+
+</html>
