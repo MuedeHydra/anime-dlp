@@ -1,6 +1,7 @@
 # Import necessary modules for Selenium and ChromeDriver setup
 from seleniumwire import webdriver
 from selenium.webdriver.common.by import By
+from pathlib import Path
 import time
 
 
@@ -10,7 +11,7 @@ import time
 def get_donload_url_Filemoon(orginal_url: str, aniworld_redict: str) -> str:
     options = webdriver.FirefoxOptions()
     options.add_argument("-profile")
-    options.add_argument('/home/tzwicker/python/anime-dlp-3/firefox-profile')
+    options.add_argument(f"{Path.home()}/python/anime-dlp-3/firefox-profile")
     driver = webdriver.Firefox(options=options)
 
     driver.get(orginal_url)
