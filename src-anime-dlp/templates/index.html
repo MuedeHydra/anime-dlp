@@ -30,7 +30,7 @@
     <hr>
     <section class="container">
         <div class="one">
-            <p>open to Download (url fetcht):</p>
+            <p>open to Download (url fetcht): <span id="sleep_time"></span></p>
             <!--<pre><span id="que"></span></pre>-->
             <ul id="que"></ul>
             <p>open:</p>
@@ -61,6 +61,7 @@
             document.getElementById("que").innerHTML = que;
             document.getElementById("open").innerHTML = msg.open_to_pars;
             document.getElementById("faild").innerHTML = msg.faild;
+            document.getElementById("sleep_time").innerHTML = msg.sleep_time;
         });
     });
 </script>

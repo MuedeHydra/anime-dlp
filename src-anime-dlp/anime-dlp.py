@@ -30,9 +30,11 @@ open_dowanload: list = []
 open_to_pars: list = []
 faild: list = []
 thread: bool = False  # global var set socket io on else it hibernats
+sleep_time_next_url_pars: int = 0
 
 conf: dict = {}
 
+anime_database_li = []
 
 threads: list = []
 threads_output: list = []
@@ -45,6 +47,15 @@ for n in range(1):
 # ----------------------------------------------------------
 # aniworld
 # ----------------------------------------------------------
+def read_anime_db() -> None:
+    """reads the txt file and add it to the list"""
+    global anime_database_li
+
+    with open(os.path.expanduser(conf["path_anime_db"]), "r") as database:
+        animes: str = database.read()
+        anime_database_li.extend(animes.split("\n")[:-1])
+
+
 def read_html_from_requests(url: str):
     html = requests.get(url)
     return html.text
@@ -52,8 +63,8 @@ def read_html_from_requests(url: str):
 
 def find_episode(html_data: str) -> int:
     """count the episodes"""
-    start: int = (html_data.find('<strong>Episoden:</strong>')) + 41 # to remove class=row
-    stop: int = start +html_data[start:].find("</ul>")
+    start: int = (html_data.find('<strong>Episoden:</strong>')) + 41  # to remove class=row
+    stop: int = start + html_data[start:].find("</ul>")
     hoster: str = html_data[start:stop].replace("  ", "")
 
     hoster_li: list = hoster.split("</li>")
@@ -163,6 +174,11 @@ def if_already_downloaded(path: str) -> bool:
     return os.path.isfile(path)
 
 
+def if_already_downloaded_in_db(path: str) -> bool:
+    episode_name: str = path.rpartition("/")[-1]
+    return episode_name in anime_database_li
+
+
 def anime_download_prepare(url: str, format: str = "mp4", website: str = "aniworld") -> None:
 
     start, stop, season, url = get_episoden(url)
@@ -173,21 +189,27 @@ def anime_download_prepare(url: str, format: str = "mp4", website: str = "aniwor
         filename = f"{anime_name}/Season {season:02}/"
         filename += f"{anime_name}_S{season:02}E{start:02}.mp4"
         if if_already_downloaded(f"{conf["path_anime"]}/{filename}"):
-            print("anime is already donloaded", filename)
+            print("anime is already donloaded", filename.rpartition("/")[-1])
+            continue
+        if if_already_downloaded_in_db(filename):
+            print("anime is already donloaded on server", filename.rpartition("/")[-1])
             continue
         open_to_pars.append({"url": url, "filename": filename, "episode": start,
                              "season": season, "format": format, "website": website})
 
 
 def anime_download():
+    global sleep_time_next_url_pars
     while len(open_to_pars) > 0:
         data = open_to_pars.pop(0)
         download_URL = get_url(data["url"], data["season"], data["episode"])
         data["download_URL"] = download_URL
         open_dowanload.append(data)
-        time.sleep(120)
-        # if len(open_to_pars) == 0:
-        #     break
+        sleep_time_next_url_pars = conf["sleep_time"]
+        for i in range(int(sleep_time_next_url_pars / 2)):
+            sleep_time_next_url_pars -= 2
+            time.sleep(2)
+        # time.sleep(180)
 
 
 # ----------------------------------------------------------
@@ -328,6 +350,7 @@ def background_thread() -> None:
                 'open': make_html_list(open_dowanload),
                 'open_to_pars': make_html_list(open_to_pars),
                 'faild': make_html_list(faild),
+                "sleep_time": sleep_time_next_url_pars,
                 "progress": progress()
             })
             time.sleep(2)
@@ -372,7 +395,8 @@ def disconnect():
 
 
 if __name__ == '__main__':
-    conf = conf_reader(f"{Path.home()}/python/anime-dlp-3/src-anime-dlp/anime-dlp.conf")
+    conf = conf_reader(f"{Path.home()}/python/anime-dlp-4/src-anime-dlp/anime-dlp.conf")
+    read_anime_db()
     # conf = conf_reader("~/python/anime-dlp-3/anime-dlp.conf")
     threading.Thread(target=background_thread, daemon=True).start()
     app.run()
