@@ -73,6 +73,16 @@ def find_episode(html_data: str) -> int:
     return len(hoster_li)
 
 
+def find_movis(html_data: str) -> int:
+    """count the episodes"""
+    start: int = (html_data.find('<tbody id="season0">')) + 20  # to remove class=row
+    stop: int = start + html_data[start:].find("</table>")
+    hoster: str = html_data[start:stop].replace("  ", "")
+
+    movis: int = hoster.count('<td><a href="/anime/stream/')
+    return movis
+
+
 def find_hoster(html_data: str):
     """finds the strams from aniworld"""
     start: int = (html_data.find('<ul class="row">')) + 17  # to remove class=row
@@ -124,6 +134,14 @@ def get_anime_name(url: str) -> str:
     return name
 
 
+def get_movi_name(html_data: str) -> str:
+    """count the episodes"""
+    start: int = (html_data.find('<h2>  <span class="episodeGermanTitle">')) + 39  # to remove class=row
+    stop: int = start + html_data[start:].find("</span>")
+    name: str = html_data[start:stop].replace("  ", "")
+    return name
+
+
 def get_episoden(url: str) -> tuple[int, int, int, str]:
     """get the start and stop from the url + it storts the url"""
     start: int = 0
@@ -143,6 +161,20 @@ def get_episoden(url: str) -> tuple[int, int, int, str]:
         start = 1
         url = url.removesuffix(f"/staffel-{season}")
         stop = find_episode(read_html_from_requests(f"{url}/staffel-{season}"))
+
+    elif url.count("film-") == 1:
+        url_s = url.split("/")
+        season = 0
+        episode = int(url_s[len(url_s)-1].split("-")[1])
+        start = episode
+        stop = episode
+        url = url.removesuffix(f"/filme/film-{episode}")
+    elif url.count("filme") == 1:
+        url_s = url.split("/")
+        season = 0
+        start = 1
+        url = url.removesuffix("/filme")
+        stop = find_movis(read_html_from_requests(f"{url}/filme"))
 
     return start, stop, season, url
 
@@ -186,8 +218,13 @@ def anime_download_prepare(url: str, format: str = "mp4", website: str = "aniwor
     anime_name = get_anime_name(url)
 
     for start in range(start, stop + 1):
-        filename = f"{anime_name}/Season {season:02}/"
-        filename += f"{anime_name}_S{season:02}E{start:02}.mp4"
+        if season == 0:
+            filename = f"{anime_name}/Movies/"
+            filename += get_movi_name(read_html_from_requests(f"{url}/filme/film-{start}"))
+            filename += f" Film-{start}.mp4"
+        else:
+            filename = f"{anime_name}/Season {season:02}/"
+            filename += f"{anime_name}_S{season:02}E{start:02}.mp4"
         if if_already_downloaded(f"{conf["path_anime"]}/{filename}"):
             print("anime is already donloaded", filename.rpartition("/")[-1])
             continue
